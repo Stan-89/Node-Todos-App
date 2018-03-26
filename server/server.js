@@ -1,48 +1,18 @@
-//We run this file when we want to run the app
-//First, load Mongoose
-var mongoose = require('mongoose');
+//Import mongoose, which is already connected to the database.
+//Recal ES6 destructuring (instead of theObject.mongoose, straight up {mongoose}
+//so we declare it as a variable as well.
+var {mongoose} = require('./db/mongoose.js');
 
-//Tell mongoose to use its library for promises since we don't want to have to deal with callbacks
-mongoose.Promise = global.Promise; //We only have to do this once.
+//Models importation
+var {Todo} = require('./models/todo.js');
+var {User} = require('./models/user.js');
 
-//Connect through mongoose
-mongoose.connect('mongodb://localhost:27017/TodoApp');
-
-//Todo model
-var Todo = mongoose.model('Todo', {
-  text:{
-    type: String,
-    required:true,
-    minlength:1,
-    trim:true
-  },
-  completed:{
-    type: Boolean,
-    default:false
-  },
-  completedAt:{
-    type: Number,
-    default:null
-  }
-});
 
 //Todo entity
 var newTodo = new Todo({
   text: 'Feed the cats',
   completed: false,
   completedAt: 123123
-});
-
-//Make a model for the user
-//Recall: first arg is the name of the model, second is the "blueprint" for the types and their types/options
-//Where they are an object of objects, propertyName: { required: ...., default: ...}
-var User = mongoose.model('User', {
-  email:{
-    type:String,
-    required:true,
-    trim:true,
-    minlength:1
-  }
 });
 
 
@@ -61,6 +31,9 @@ user.save().then((doc) => {
 //Save the stuff
 newTodo.save().then((doc) => {
   console.log("Saved todo", doc);
+  mongoose.connection.close();
 }, (e) => {
   console.log("Unable to save todo");
 });
+
+//Note:we put the close here, we get an error since insert hasn't finished yet
