@@ -8,52 +8,57 @@ mongoose.Promise = global.Promise; //We only have to do this once.
 //Connect through mongoose
 mongoose.connect('mongodb://localhost:27017/TodoApp');
 
-//Advantage of mongoose: we can declare the connection and then move on to
-//other code -> behind the scenes, it will take care of waiting for the connection
-//to happen before executing other code. It's good since no need for micromanaging
-
-
-//Now, we're going to create a model.
-/*
-  In MongoDB, our collections can store anything (recall collection -> table)
-  We can have a document that has age and the others might not have that property.
-
-  Mongoose: more organized. We create a model for everything we want to store.
-  A model will have attributes.
-*/
-
-//Let's create a Todo model
-//First arg: Name of model, second: object of props
-/*
-  Notes:
-  -No need for created at, since the id will contain it like in mongodb usual
-  - Many options available for the attributes, such as TYP
-*/
+//Todo model
 var Todo = mongoose.model('Todo', {
   text:{
-    type: String
+    type: String,
+    required:true,
+    minlength:1,
+    trim:true
   },
   completed:{
-    type: Boolean
+    type: Boolean,
+    default:false
   },
   completedAt:{
-    type: Number
+    type: Number,
+    default:null
   }
 });
 
-//We have not made any requirements to the models yet
-//So we can just insert it like that.
-
-//We create a document by doing var something = new modelName({props: vals})
+//Todo entity
 var newTodo = new Todo({
   text: 'Feed the cats',
   completed: false,
   completedAt: 123123
 });
 
-//But we also need to save it
-//It has the method since coming from mongoose library
-//Save returns a promise, so we can check it out
+//Make a model for the user
+//Recall: first arg is the name of the model, second is the "blueprint" for the types and their types/options
+//Where they are an object of objects, propertyName: { required: ...., default: ...}
+var User = mongoose.model('User', {
+  email:{
+    type:String,
+    required:true,
+    trim:true,
+    minlength:1
+  }
+});
+
+
+//Insert a user entity
+var user = new User({
+  email: 'test@somewhere.ca'
+});
+
+user.save().then((doc) => {
+  console.log("Saved the user");
+}, (e) => {
+  console.log("Unable to save the todo", e);
+});
+
+
+//Save the stuff
 newTodo.save().then((doc) => {
   console.log("Saved todo", doc);
 }, (e) => {
