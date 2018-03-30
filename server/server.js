@@ -9,6 +9,9 @@ var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo.js');
 var {User} = require('./models/user.js');
 
+//To verify our object ID
+const {ObjectID} = require('mongodb');
+
 //Our app
 var app = express();
 
@@ -50,6 +53,43 @@ app.get('/todos', (req, res) => {
   }, (e) => {
     res.status(400).send(e);
   });
+});
+//------------------------------------------------------------------------------------
+//Fetching a todo from ID passed in URL
+/*
+    NOTE: INSTEAD OF return.console.log("Invalud"); OR ERROR Console.logging OR
+    returning the result object straight up, recall that we're not on the console
+    anymore -> with express, we have the ab ility to send statuses, and info
+    So: in the get, res is the response, we can res.status(404).send(); //just sending 404
+    or we can also send the result
+    404 not found so we can send it for any info.
+    200 is OK and it gets AUTOMATICALLY sent
+*/
+
+app.get('/todos/:id', (req, res) => {
+  //Get the id
+  const theID = req.params.id;
+
+  //If not valid
+  if(!ObjectID.isValid(theID)){
+    return res.status(404).send();
+  }
+
+  //Now fetch it
+  Todo.findById(theID).then((doc) => {
+    if(!doc){
+      return res.status(404).send();
+    }
+
+    //Returning the "real" result
+    return res.send({doc});
+
+  }, (e) => {
+    return res.status(404).send();
+  });
+
+
+
 });
 //------------------------------------------------------------------------------------
 
