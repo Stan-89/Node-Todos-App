@@ -11,12 +11,23 @@ const {app} = require('./../server.js');
 //Also the model itself
 const {Todo} = require('./../models/todo.js');
 
+  //Create a constant of todos (two of them)
+  const todos = [{
+    text: 'First test todo'
+  }, {
+    text: 'Second test todo'
+  }];
+
+
   //Empty the DB before the requests come in
   beforeEach((done) => {
-    Todo.remove({}).then(()=>done());
+    Todo.remove({}).then(()=>{
+      //Recall that to chain thens, we must return a promise in the n-1 then
+      return Todo.insertMany(todos); //MongooseInstance.insertMany(object)
+    }).then(() => done());
   });
 
-
+//------------------------------------------------------------------------------------
 //Recall that we can describe tests (identation)
 describe('POST /todos', () => {
   it('should create a new todo by posting it to the endpoint', (done) => {
@@ -41,7 +52,7 @@ describe('POST /todos', () => {
       //And what exactly it was.
 
       //Find function: like the one we saw for querying
-      Todo.find().then((todos) => {
+      Todo.find({text}).then((todos) => {
         expect(todos.length).toBe(1);
         expect(todos[0].text).toBe(text);
         done();
@@ -64,9 +75,23 @@ describe('POST /todos', () => {
       }
 
       Todo.find().then((todos) => {
-        expect(todos.length).toBe(0);
+        expect(todos.length).toBe(2);
         done();
       }).catch((e) => done(e));
     });
+  });
+});
+//------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------
+//Recall that we can describe tests (identation)
+describe('GET /todos', () => {
+  it('It should GET All TODOS', (done) => {
+    request(app)
+    .get('/todos')
+    .expect(200)
+    .expect((res) => {
+      expect(res.body.todos.length).toBe(2);
+    })
+    .end(done);//When end with nothing in it but done, we can just pass done as a var arg.
   });
 });
