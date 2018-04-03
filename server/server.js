@@ -92,6 +92,37 @@ app.get('/todos/:id', (req, res) => {
 
 });
 //------------------------------------------------------------------------------------
+//Delete the todo task
+//Note: we're using DELETE Protocol (like GET and POST, but for deleting)
+app.delete('/todos/:id', (req, res) => {
+
+  //Get the given id
+  var theID = req.params.id;
+
+  //Check if valid format first
+  if(!ObjectID.isValid(theID)){
+    //Return a 404 without a body since error
+    return res.status(404).send();
+  }
+
+  //If here, then formatting is OK.
+  //findByIdAndRemove, if NULL then it was NOT Removed
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if(!todo){
+      return res.status(404).send();
+    }
+
+    //If here, it was removed and we have it
+    //200 automatic status, just send back the body - todo
+    res.send(todo);
+  }).catch((e) => {
+    //If an exception was thrown somewhere, place a catch after the THEN
+    //Recall that this way, we take care of the possible exceptions that might occur
+    res.status(400).send();
+  });
+
+});
+//------------------------------------------------------------------------------------
 
 app.listen(3000, () => {
   console.log("Started on port 3000");
