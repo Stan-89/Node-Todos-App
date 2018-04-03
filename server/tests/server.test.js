@@ -106,13 +106,14 @@ describe('GET /todos/:id', () =>{
   //Finding an existing todo
   it('Should return a todo doc', (done) => {
     request(app) //Note that we're using `` for $vars in text, ES6, it is ${varNameWithJS}
-    //Also note: we created ids (for the purpose of testing) before the insertion {_id: new ObjectID(),text: 'First test todo'}
-    //.toHexString(): recall that _id is in fact an ObjectID and it has a method called objectId.toHexString() which will
+    //Also note: we created ids (for the purpose of testing) before
+    //the insertion {_id: new ObjectID(),text: 'First test todo'}
+    //.toHexString(): recall that _id is in fact an ObjectID and it has a method
+    //called objectId.toHexString() which will
     //'Return the ObjectID id as a 24 byte hex string representation'
     .get(`/todos/${todos[0]._id.toHexString()}`)
     .expect(200)
     .expect((res) => {
-      console.log(res.body);
       expect(res.body.todo.text).toBe(todos[0].text);
     })
     .end(done);//Done is a param argument here
