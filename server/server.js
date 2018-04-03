@@ -12,6 +12,9 @@ var {User} = require('./models/user.js');
 //To verify our object ID
 const {ObjectID} = require('mongodb');
 
+//Get lodash
+const _ = require('lodash');
+
 //Our app
 var app = express();
 
@@ -118,6 +121,52 @@ app.delete('/todos/:id', (req, res) => {
   }).catch((e) => {
     //If an exception was thrown somewhere, place a catch after the THEN
     //Recall that this way, we take care of the possible exceptions that might occur
+    res.status(400).send();
+  });
+
+});
+//------------------------------------------------------------------------------------
+//Updating a specific todo (from its id)
+//We're using patch to do it (registering an url to our app through express)
+app.patch('/todos/:id', (req, res) => {
+  //Get the id from the request
+  var id = req.params.id;
+
+  //With lodash's .pick, pick stuff from an existing object to create a new one
+  //We'll give the option to the request to have a text field and a completed field
+  //For the rest, we'll take care of it ourselves
+  var body = _.pick(req.body, ['text', 'completed']);
+
+  //verify if a valid id
+  if(!ObjectID.isValid(id)){
+    return res.status(404).send();
+  }
+
+  //If completed is given (and is a boolean and is true, we take the time now as completed
+  //If not, then it is not completed, and no time of completition is given
+  if(_.isBoolean(body.completed) && body.completed){
+    body.completedAt = new Date().getTime();
+  }
+  else{
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  //We are going to use the function findByIdAndUpdate(id, creationOptions)
+  //Like findOneAndUpdate for mongo, but we pass through express to do it
+  Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then((todo) => {}).catch((e) => {
+    //If any exceptions occur, catch them here, send error msg
+    //Recall: $set: body will set THE WHOLE thing to the var body
+    //$set : {someProp: 'someVal'} will set the property of that object
+    //If our todo is null (!todo), return 404
+    if(!todo){
+      return res.status(404).send();
+    }
+
+    //Send the result now
+    res.send({todo});
+
+    //Note: new: true options is similar to returnOriginal: false
     res.status(400).send();
   });
 
