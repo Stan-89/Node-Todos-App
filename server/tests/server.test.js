@@ -136,3 +136,52 @@ describe('GET /todos/:id', () =>{
   });
 });
 //------------------------------------------------------------------------------------
+//Deleting a particular todo
+describe('DELETE /todos/:id', () => {
+
+  //Should remove a particular todo
+  it('Should remove a todo', (done) => {
+    //We chose an existing ID from the ones we insert in the beginning!
+    //Recall:we give them ids in the beginning
+    var hexId = todos[1]._id.toHexString();
+
+    //Make a delete request with that HEX Id.
+    //Expect the deleted id to be the one given (from result object)
+    //Since this is how we declared our function previously.
+     request(app)
+     .delete(`/todos/${hexId}`)
+     .expect(200)
+     .expect((res) => {
+       expect(res.body.todo._id).toBe(hexId);
+     })//In the end, if error, return done with the error
+     .end((err, res) => {
+       if (err) {
+         return done(err);
+       }
+       //Find by this id, expect expect(returendResult) toBeNull since not there
+       //!Note: testing for null => expect(thething).toNotExist();
+       Todo.findById(hexId).then((todo) => {
+         expect(todo).toBeNull();
+         done(); //Done after testing it
+       }).catch((e) => done(e));//Catch if error
+     });
+   });
+
+   //Get a random ID, put it to hexString and check for it
+  it('should return 404 if todo not found', (done) => {
+  var hexId = new ObjectID().toHexString();
+  request(app)
+    .delete(`/todos/${hexId}`)
+    .expect(404)
+    .end(done);
+  });
+
+  //Invalid request
+  it('should return 404 if object id is invalid', (done) => {
+    request(app)
+      .delete('/todos/123abc')
+      .expect(404)
+      .end(done);
+  });
+});
+//------------------------------------------------------------------------------------

@@ -107,7 +107,7 @@ app.delete('/todos/:id', (req, res) => {
 
   //If here, then formatting is OK.
   //findByIdAndRemove, if NULL then it was NOT Removed
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findByIdAndRemove(theID).then((todo) => {
     if(!todo){
       return res.status(404).send();
     }
