@@ -114,7 +114,7 @@ app.delete('/todos/:id', (req, res) => {
 
     //If here, it was removed and we have it
     //200 automatic status, just send back the body - todo
-    res.send(todo);
+    res.send({todo});
   }).catch((e) => {
     //If an exception was thrown somewhere, place a catch after the THEN
     //Recall that this way, we take care of the possible exceptions that might occur
