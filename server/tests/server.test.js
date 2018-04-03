@@ -3,6 +3,9 @@ const expect = require('expect');
 //Supertest allows us to do requests for tests
 const request = require('supertest');
 
+//Since we'll be using it
+const {ObjectID} = require('mongodb');
+
 //Since we need to access the app itself (from server.js), we have to export it there
 //So in server.js, we'll put modules.exports = {app};
 
@@ -13,8 +16,10 @@ const {Todo} = require('./../models/todo.js');
 
   //Create a constant of todos (two of them)
   const todos = [{
+    _id: new ObjectID(),
     text: 'First test todo'
   }, {
+    _id: new ObjectID(),
     text: 'Second test todo'
   }];
 
@@ -95,3 +100,38 @@ describe('GET /todos', () => {
     .end(done);//When end with nothing in it but done, we can just pass done as a var arg.
   });
 });
+//------------------------------------------------------------------------------------
+//Getting a particular todo
+describe('GET /todos/:id', () =>{
+  //Finding an existing todo
+  it('Should return a todo doc', (done) => {
+    request(app) //Note that we're using `` for $vars in text, ES6, it is ${varNameWithJS}
+    //Also note: we created ids (for the purpose of testing) before the insertion {_id: new ObjectID(),text: 'First test todo'}
+    //.toHexString(): recall that _id is in fact an ObjectID and it has a method called objectId.toHexString() which will
+    //'Return the ObjectID id as a 24 byte hex string representation'
+    .get(`/todos/${todos[0]._id.toHexString()}`)
+    .expect(200)
+    .expect((res) => {
+      console.log(res.body);
+      expect(res.body.todo.text).toBe(todos[0].text);
+    })
+    .end(done);//Done is a param argument here
+  });
+
+  it('Should return 404 if todo not found', (done) => {
+    var hexId = new ObjectID().toHexString();
+    console.log('See what it looks like', hexId);
+    request(app)
+    .get(`/todos/${hexId}`)
+    .expect(404)
+    .end(done);
+  });
+
+  it('Should return 404 for non-object id as well', (done) => {
+    request(app)
+    .get('/todos/123abc')
+    .expect(404)
+    .end(done);
+  });
+});
+//------------------------------------------------------------------------------------

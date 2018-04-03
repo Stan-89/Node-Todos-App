@@ -76,13 +76,13 @@ app.get('/todos/:id', (req, res) => {
   }
 
   //Now fetch it
-  Todo.findById(theID).then((doc) => {
-    if(!doc){
+  Todo.findById(theID).then((todo) => {
+    if(!todo){
       return res.status(404).send();
     }
 
     //Returning the "real" result
-    return res.send({doc});
+    return res.send({todo});
 
   }, (e) => {
     return res.status(404).send();
