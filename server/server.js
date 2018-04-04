@@ -1,3 +1,6 @@
+//Setup our environment
+require('./config/config.js');
+
 //We're going to use express and bodyParser
 var express = require('express');
 var bodyParser = require('body-parser');

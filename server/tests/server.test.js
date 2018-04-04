@@ -217,16 +217,11 @@ describe('DELETE /todos/:id', () => {
     });
 
     //Same test, but not completed and completedAt will be null/won't exist
-    //Should update the todo we inserted
     it('Should update the todo, but this time not completed on 2nd unit', (done) => {
-      //Get the id from the inserted todos (on beforeEach)
-      //Generate hex string of the id
       var hexId = todos[1]._id.toHexString();
 
-      //The new text we're going to insert
       var text = 'This will be the new text second type';
 
-      //Use the app
       request(app) //Sending a PATCH request
       .patch(`/todos/${hexId}`)
       .send({
