@@ -20,7 +20,9 @@ const {Todo} = require('./../models/todo.js');
     text: 'First test todo'
   }, {
     _id: new ObjectID(),
-    text: 'Second test todo'
+    text: 'Second test todo',
+    completed:true,
+    completedAt: 333
   }];
 
 
@@ -185,3 +187,61 @@ describe('DELETE /todos/:id', () => {
   });
 });
 //------------------------------------------------------------------------------------
+  //Testing the patching (updating)
+  describe('PATCH /todos/:id', () => {
+
+    //Should update the todo we inserted
+    it('Should update the todo', (done) => {
+      //Get the id from the inserted todos (on beforeEach)
+      //Generate hex string of the id
+      var hexId = todos[0]._id.toHexString();
+
+      //The new text we're going to insert
+      var text = 'This will be the new text';
+
+      //Use the app
+      request(app) //Sending a PATCH request
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: true,
+        text
+      }) //Sending the info for updating the particular object
+      .expect(200)
+      .expect((res) =>
+      {
+        expect(res.body.todo.text).toBe(text); //We expect it to be the same text we gave
+        expect(res.body.todo.completed).toBe(true); //Must be true in any event
+        expect(typeof res.body.todo.completedAt).toBe('number'); //Must be a number, since timestamp
+      })
+      .end(done);
+    });
+
+    //Same test, but not completed and completedAt will be null/won't exist
+    //Should update the todo we inserted
+    it('Should update the todo, but this time not completed on 2nd unit', (done) => {
+      //Get the id from the inserted todos (on beforeEach)
+      //Generate hex string of the id
+      var hexId = todos[1]._id.toHexString();
+
+      //The new text we're going to insert
+      var text = 'This will be the new text second type';
+
+      //Use the app
+      request(app) //Sending a PATCH request
+      .patch(`/todos/${hexId}`)
+      .send({
+        completed: false,
+        text
+      }) //Sending the info for updating the particular object
+      .expect(200)
+      .expect((res) =>
+      {
+        expect(res.body.todo.text).toBe(text); //We expect it to be the same text we gave
+        expect(res.body.todo.completed).toBe(false); //Must be true in any event
+        expect(res.body.todo.completedAt).toBeNull(); //Must be a number, since timestamp
+      })
+      .end(done);
+    });
+
+
+  });
