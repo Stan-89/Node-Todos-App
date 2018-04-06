@@ -172,6 +172,27 @@ app.patch('/todos/:id', (req, res) => {
 
 });
 //------------------------------------------------------------------------------------
+//---------------------------------------USERS PART START ---------------------------------------------
+  //Post to create users -> with our model
+  app.post('/users', (req, res) => {
+    //Body is the object that we're going to be inserting
+    //We'll use _.pick to straight up pick the email and password from a request and make them into an obj
+    var body = _.pick(req.body, ['email', 'password']);
+    //Note on the user creation: to create an object BY USING A MODEL, pass the data as args
+    //whereas the model is mongoose.model('User', {...}); and our var body contains the needed stuff
+    //that is named in the same way as welL: email, password
+    var user = new User(body);
+
+    //Note: validation would stop ^ there, if there were any errors. So no need to do anything here
+    user.save().then((user) => {
+      res.send(user);
+    }).catch((e) => {
+      res.status(400).send(e);
+    });
+  });
+//---------------------------------------USERS PART END ---------------------------------------------
+
+
 
 app.listen(3000, () => {
   console.log("Started on port 3000");
