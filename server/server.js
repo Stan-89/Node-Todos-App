@@ -1,3 +1,6 @@
+//Setup our environment
+require('./config/config.js');
+
 //We're going to use express and bodyParser
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -154,7 +157,7 @@ app.patch('/todos/:id', (req, res) => {
 
   //We are going to use the function findByIdAndUpdate(id, creationOptions)
   //Like findOneAndUpdate for mongo, but we pass through express to do it
-  Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then((todo) => {}).catch((e) => {
+  Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then((todo) => {
     //If any exceptions occur, catch them here, send error msg
     //Recall: $set: body will set THE WHOLE thing to the var body
     //$set : {someProp: 'someVal'} will set the property of that object
@@ -162,10 +165,9 @@ app.patch('/todos/:id', (req, res) => {
     if(!todo){
       return res.status(404).send();
     }
-
     //Send the result now
     res.send({todo});
-
+  }).catch((e) => {
     //Note: new: true options is similar to returnOriginal: false
     res.status(400).send();
   });
