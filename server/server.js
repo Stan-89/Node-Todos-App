@@ -187,7 +187,10 @@ app.patch('/todos/:id', (req, res) => {
 
     //Note: validation would stop ^ there, if there were any errors. So no need to do anything here
     user.save().then((user) => {
-      res.send(user);
+      return user.generateAuthToken();
+    }).then((token) => {
+      //Setting an x-something header is standard for CUSTOM created headers
+      res.header('x-auth', token).send(user);
     }).catch((e) => {
       res.status(400).send(e);
     });
