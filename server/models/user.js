@@ -91,6 +91,43 @@ UserSchema.methods.toJSON = function(){
   return _.pick(userObject, ['_id', 'email']);
 };
 
+//We will create a STATIC method to find by token
+UserSchema.statics.findByToken = function(token){
+  //Easier to understand context
+  var User = this;
+  var decoded;
+
+  //Here we verify the given token (provided arg) with the secret code
+  //To see that it's a match.
+  //Out of the token, recall that we're able to get the object that was used
+  //to create that token (through json)
+  try
+  {
+    //Recall that .verify(token, secret) will not only verify but also
+    //return the object decoded if successful (if not, will throw error)
+    decoded = jwt.verify(token, 'abc123Secret');
+  }
+  catch(e)
+  { //Note: through Mongoose, we have access to Promise
+    //So we REJECT instead of resolving
+    return Promise.reject();
+  }
+
+  //Now that we have the info decoded, let's look for it
+  //Recall that ModelName.findById exists. It will look into our collection
+  //from the provided arguments.
+  //And straight up return the result
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+
+  //Note: here, we know that it's about authorizing, so access is auth
+  //We decode the id of the user (that is, the objectID that was created)
+  //And the tokenthat should match, since we generated and saved it upon creation
+};
+
 
 //Our model
 var User = mongoose.model('User', UserSchema);
