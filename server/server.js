@@ -18,6 +18,9 @@ const {ObjectID} = require('mongodb');
 //Get lodash
 const _ = require('lodash');
 
+//Get our authenticate through object deconstruction
+var {authenticate} = require('./middleware/authenticate.js');
+
 //Our app
 var app = express();
 
@@ -187,11 +190,20 @@ app.patch('/todos/:id', (req, res) => {
 
     //Note: validation would stop ^ there, if there were any errors. So no need to do anything here
     user.save().then((user) => {
-      res.send(user);
+      return user.generateAuthToken();
+    }).then((token) => {
+      //Setting an x-something header is standard for CUSTOM created headers
+      res.header('x-auth', token).send(user);
     }).catch((e) => {
       res.status(400).send(e);
     });
   });
+
+  //Get a specific user detail
+  //Pass the middleware wwe wrote authenticate
+  app.get('/users/me', authenticate, (req, res) => {
+  res.send(req.user);
+});
 //---------------------------------------USERS PART END ---------------------------------------------
 
 
