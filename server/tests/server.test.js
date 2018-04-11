@@ -14,6 +14,9 @@ const {app} = require('./../server.js');
 //Also the model itself
 const {Todo} = require('./../models/todo.js');
 
+//We're going to need the user as well
+const {User} = require('./../models/user.js');
+
 //And from our seed
 const {todos, populateTodos, users, populateUsers} = require('./seed/seed.js');
 
@@ -230,3 +233,69 @@ describe('DELETE /todos/:id', () => {
 
 
   });
+
+//------------------------------------------------------------- Testing for the users
+
+//Describing tests for /users, on POST
+describe('POST /users', () => {
+
+  //We should fully create a user here
+  it('should create a user', (done) => {
+    //Email and pass that we're going to send
+    var email = 'example@example.com';
+    var password = '123mnb!';
+
+    request(app)
+      .post('/users')
+      .send({email, password})
+      .expect(200)
+      .expect((res) => {
+        //In this test, expect 200 (OK) AND
+        //To get x-auth header (token) back
+        //And body to has _id existing and email that is an email value
+        expect(res.headers['x-auth']).toBeTruthy();
+        expect(res.body._id).toBeTruthy();
+        expect(res.body.email).toBe(email);
+      })//At the end of this test
+      .end((err) => {
+        if (err) {//If an error has occured, return done with error as arg
+                  //that it will print
+          return done(err);
+        }
+        //Finally, if here: find the user using the email,
+        //with that result check if not null and check if passwords are not the
+        //same means it was hashed).
+        User.findOne({email}).then((user) => {
+          expect(user).toBeTruthy();
+          expect(user.password).not.toBe(password);
+          done();
+        });
+      });
+  });
+
+//We're posting to /users, sending email and apssword props in an object.
+//However, the email one is invalid so we're expecting a 400 code
+  it('Should return a validation error', (done) => {
+    request(app)
+      .post('/users')
+      .send({
+        email: 'and',
+        password: '123'
+      })
+      .expect(400)
+      .end(done);
+  });
+
+
+  //Should return a msg that user's email has been used
+  it('should not create user if email in use', (done) => {
+    request(app)
+      .post('/users')
+      .send({
+        email: users[0].email,
+        password: 'Password123!'
+      })
+      .expect(400)
+      .end(done);
+  });
+});
