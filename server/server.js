@@ -201,9 +201,40 @@ app.patch('/todos/:id', (req, res) => {
 
   //Get a specific user detail
   //Pass the middleware wwe wrote authenticate
-  app.get('/users/me', authenticate, (req, res) => {
+app.get('/users/me', authenticate, (req, res) => {
   res.send(req.user);
 });
+
+//Login part
+app.post('/users/login', (req, res) => {
+  //Pick up email and password fields - if not there, it will be null - we'll get a 400 code anyways
+  //So no need for validation if there or not -> amounts to the same thing in the end.
+
+  //Recall that the result of _.pick is an object with the props from the obj we picked
+  var body = _.pick(req.body, ['email', 'password']);
+
+  //Use our defined function -> recall that it's a promise -> so .then on it
+  //We give back user in that promise (the mathed document from our collection)
+  User.findByCredentials(body.email, body.password).then((user) => {
+    //We're here, means the login was right, user was found
+    //So we need to generate a token like we do on registration and send it back
+    //generateAuthToken - we defined it as a promise as well since salting
+    return user.generateAuthToken().then((token) => {
+      //We made geenrateAuthToken to return the token
+      //We set the x-auth header, and set it to the value
+      //Plus, we send the user obj as well (its toJSON method was overriden)
+      //So no leaks of sensitive information
+      res.header('x-auth', token).send(user);
+    });
+
+  }).catch((e) => {
+    //Send a 400 code in the case of an error
+    res.status(400).send();
+  });
+});
+
+
+
 //---------------------------------------USERS PART END ---------------------------------------------
 
 

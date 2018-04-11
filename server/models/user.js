@@ -131,6 +131,42 @@ UserSchema.statics.findByToken = function(token){
   //And the tokenthat should match, since we generated and saved it upon creation
 };
 
+//We need a static method that would allow us to check if a certain user
+//exists given an email and a password (for login)
+UserSchema.statics.findByCredentials = function(email, password){
+  //To keep the context
+  var User = this;
+
+  //Since this contains promises, we must return a promise in order to obtain
+  //the async result
+
+  //First, there must be a match
+  return User.findOne({email}).then((user) => {
+    //If no result, reject
+    //Recall that Promise comes with the model (inside of it)
+    if(!user){
+      return Promise.reject();
+    }
+    //Since this is NOT an async, we need to return it in the form of a promise
+    return new Promise((resolve, reject) => {
+      //Compare the given password to the one saved in the db, using bcrypt
+      //Recall that for comparison, bcrypt doesn't need the rounds of salting
+      bcrypt.compare(password, user.password, (err, res) => {
+        //Recall that inside a Promise, we can resolve() and reject()
+        //If result is true, then great success
+        if(res){
+          //Resolve this promise, return the user var that was found with mail
+          resolve(user);
+        }
+        else{
+          reject();
+        }
+      });
+    });
+  });
+};
+
+
 //We use the .pre for this model (on the schema): before saving
 UserSchema.pre('save', function(next){
   //Keeping track of where we are (context)
