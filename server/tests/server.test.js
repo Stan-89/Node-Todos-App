@@ -14,26 +14,16 @@ const {app} = require('./../server.js');
 //Also the model itself
 const {Todo} = require('./../models/todo.js');
 
-  //Create a constant of todos (two of them)
-  const todos = [{
-    _id: new ObjectID(),
-    text: 'First test todo'
-  }, {
-    _id: new ObjectID(),
-    text: 'Second test todo',
-    completed:true,
-    completedAt: 333
-  }];
+//And from our seed
+const {todos, populateTodos, users, populateUsers} = require('./seed/seed.js');
 
 
-  //Empty the DB before the requests come in
-  beforeEach((done) => {
-    Todo.remove({}).then(()=>{
-      //Recall that to chain thens, we must return a promise in the n-1 then
-      return Todo.insertMany(todos); //MongooseInstance.insertMany(object)
-    }).then(() => done());
-  });
 
+
+//Empty the DB before the requests come in
+//Before each: execute that particular function in the callback passed as arg into beforeEach
+beforeEach(populateUsers);
+beforeEach(populateTodos);
 //------------------------------------------------------------------------------------
 //Recall that we can describe tests (identation)
 describe('POST /todos', () => {
