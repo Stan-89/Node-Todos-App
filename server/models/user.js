@@ -9,6 +9,9 @@ const jwt = require('jsonwebtoken');
 //LoDash
 const _ = require('lodash');
 
+//Bcrypt
+const bcrypt = require('bcryptjs');
+
 //Instead of straight up defining the model, we're going to use a Schema
 //Which is exactly the same thing, but in a different var
 //We can't add methods onto User, but we can with a schema
@@ -127,6 +130,30 @@ UserSchema.statics.findByToken = function(token){
   //We decode the id of the user (that is, the objectID that was created)
   //And the tokenthat should match, since we generated and saved it upon creation
 };
+
+//We use the .pre for this model (on the schema): before saving
+UserSchema.pre('save', function(next){
+  //Keeping track of where we are (context)
+  var user = this;
+
+  //Important to use next since it will allow this to continue
+
+  //modelEntity.isModified('nameOfProp') //returns true if that prop was modded and not saved
+  if(user.isModified('password')){
+    //We're here if the password was modified
+    bcrypt.genSalt(10, (err, salt) => {
+      //Salt created, time to hash
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  }
+  else{
+    //If not, next() //repetition since it's async
+    next();
+  }
+});
 
 
 //Our model
