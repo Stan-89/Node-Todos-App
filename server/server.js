@@ -241,7 +241,7 @@ app.delete('/users/me/token', authenticate, (req, res) => {
   //The request body has a 'short' version of the user object (id and pass)
   //Mongoose will "recognize" it and not throw an error
   req.user.removeToken(req.token).then(() => {
-    res.status(200).sed();
+    res.status(200).send();
   },() => {
     res.status(400).send();
   });

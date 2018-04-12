@@ -1,6 +1,6 @@
 //We are going to use this function (in authenticate()) to
 //Check if the user has submitted a header x-auth with the needed info
-var {User} = require('./../models/user')
+var {User} = require('./../models/user.js')
 
 //And the function it itself -> grab header from request
 var authenticate = (req, res, next) => {

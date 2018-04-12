@@ -364,3 +364,33 @@ describe('POST /users/login', () => {
 });
 
 });
+
+//Here, testing the deletion of the token
+//Works in real life but test not passing. Header won't take the x-auth!
+describe('DELETE users/me/token', () => {
+  it('Should remove the auth token thus log the user out', (done) =>{
+    request(app)
+    .delete('/users/me/token')
+    //Set the header of this request manually since a test
+    .set("x-auth", users[0].tokens[0].token)
+    .expect(200)
+    .end(
+
+      //At the end, we get either error or result
+      (err, res) => {
+      //If an error, end it there
+      if(err){
+        return done(err);
+      }
+
+      //But now the user token (of type auth) should not be there.
+      //And since it's the only token we've given here (recall: beforeEach used to clear)
+      //Therefore the length should be 0
+      User.findById(users[0]._id).then((user) => {
+        //For our first user that we created, check db -> no tokens
+        expect(user.tokens.length).toBe(0);
+        done();
+      }).catch((e) => done(e));
+    });
+  })
+});
