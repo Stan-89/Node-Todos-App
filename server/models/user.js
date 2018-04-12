@@ -48,7 +48,8 @@ var UserSchema = new mongoose.Schema({
     token: {
       type: String,
       required: true
-    }
+    },
+    _id: false
   }]
 });
 
@@ -66,7 +67,10 @@ UserSchema.methods.generateAuthToken = function(){
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123Secret').toString();
 
   //We defined that we wanted this structure.
-  user.tokens = user.tokens.concat([{access, token}]);
+  //NOte: concat produces strange behaviour (_id in the token ???)
+  //user.tokens = user.tokens.concat([{access, token}]);
+  //user.tokens[user.tokens.length] = {access, token};
+  user.tokens.push({access, token});
 
   //Returns a promise
   return user.save().then(()=>{
@@ -79,6 +83,23 @@ UserSchema.methods.generateAuthToken = function(){
   that's why: RETURN the PROMISE WITH A RETURN TOKEN IN ITS OWN RETURN
   //IN ORDER FOR IT TO BE CALLED ELSEWHERE
   */
+};
+
+//Removing a token (non-static method, so applies to current obj)
+UserSchema.methods.removeToken = function(token){
+  //Keep the context
+  var user = this;
+
+  //Since async operations, we have to return async
+  //(update is async)
+
+  //Recall that in update (mods), we can use $pull to pull stuff
+  return user.update({
+    $pull: {
+      tokens: {token}
+    }
+  });
+
 };
 
 //We can also OVERRIDE a method (.toJSON so we can determine what we can print)

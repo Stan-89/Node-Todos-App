@@ -236,6 +236,8 @@ describe('DELETE /todos/:id', () => {
 
 //------------------------------------------------------------- Testing for the users
 
+//-------Account creation testing
+
 //Describing tests for /users, on POST
 describe('POST /users', () => {
 
@@ -298,4 +300,67 @@ describe('POST /users', () => {
       .expect(400)
       .end(done);
   });
+});
+
+//Testing the login itself
+describe('POST /users/login', () => {
+  //Should REJECT invalid login
+  it('Should reject the invalid login info', (done) => {
+    request(app)
+    .post('/users/login')
+    .send({
+      email:users[1].email,
+      password:users[1].password + 'abc'
+    })
+    .expect(400)
+    .expect((res) => {
+      expect(typeof res.headers['x-auth']).toBe('undefined');
+    })
+    .end((err, res) => {
+      //Error catching
+      if(err){
+        return done(err);
+      }
+
+      //Since we're dealing with the second user, we expect him
+      //But he shouldn't have any tokens tho
+      User.findById(users[1]._id).then((user) => {
+        //Expect length of tokens to be still 0 since not authorized
+        expect(user.tokens.length).toBe(0);
+        done();
+      }).catch((e) => done(e));
+    });
+  });
+
+  //Similar, but this time we expect the x-auth header to exist
+  //As well as  have a token auth, of type 'auth'
+  it('User should get logged in', (done) => {
+  request(app)
+    .post('/users/login')
+    .send({
+      email: users[1].email,
+      password: users[1].password
+    })
+    .expect(200)
+    .expect((res) => {
+      //Expect it to be there
+      expect(res.headers['x-auth']).toBeTruthy();
+    })
+    .end((err, res) => {
+      if (err) {
+        return done(err);
+      }
+      //Recall that beforeEach will have deleted the previous test
+      //Find that user in the db, check if token is: 1. access: 'auth"
+      //and the same one we got back since upon creation it is inserted
+      //Because we save the user (with that token prop) before returning it
+      //In the /login
+      User.findById(users[1]._id).then((user) => {
+        expect(user.tokens[0].access).toBe('auth');
+        expect(user.tokens[0].token).toBe(res.headers['x-auth']);
+        done();
+      }).catch((e) => done(e));
+    });
+});
+
 });

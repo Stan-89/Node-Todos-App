@@ -233,6 +233,19 @@ app.post('/users/login', (req, res) => {
   });
 });
 
+//Logging out - we're going to DELETE the token.
+//So app.delete
+//Recall that we previously created middleware that we can use in requests
+//Where we make sure that the user is logged in(has appropriate & valid token)
+app.delete('/users/me/token', authenticate, (req, res) => {
+  //The request body has a 'short' version of the user object (id and pass)
+  //Mongoose will "recognize" it and not throw an error
+  req.user.removeToken(req.token).then(() => {
+    res.status(200).sed();
+  },() => {
+    res.status(400).send();
+  });
+});
 
 
 //---------------------------------------USERS PART END ---------------------------------------------
