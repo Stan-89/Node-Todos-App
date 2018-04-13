@@ -4,16 +4,28 @@ const {Todo} = require('./../../models/todo.js');
 const {User} = require('./../../models/user');
 const jwt = require('jsonwebtoken');
 
+
+
+//---------------------------------------- USER TESTING HERE
+//Taking care of the user testing now
+
+//we need to know the ids in advance since we're using it to sign the auth token
+//(recall that it is composed of _id and access:auth)
+const userOneId = new ObjectID();
+const userTwoId = new ObjectID();
+
 //First we seed the todos from before
 //Create a constant of todos (two of them)
 const todos = [{
   _id: new ObjectID(),
-  text: 'First test todo'
+  text: 'First test todo',
+  _creator: userOneId
 }, {
   _id: new ObjectID(),
   text: 'Second test todo',
   completed:true,
-  completedAt: 333
+  completedAt: 333,
+  _creator: userTwoId
 }];
 
 //Function that will populate it
@@ -26,15 +38,6 @@ const populateTodos = (done) => {
 
 //Finally, export the info we need
 //We need the function populateTodos but also todos since they are used in the function
-
-
-//---------------------------------------- USER TESTING HERE
-//Taking care of the user testing now
-
-//we need to know the ids in advance since we're using it to sign the auth token
-//(recall that it is composed of _id and access:auth)
-const userOneId = new ObjectID();
-const userTwoId = new ObjectID();
 
 //the users array
 //Each object has: _id that we generated, email since required, and pass
@@ -51,7 +54,11 @@ const users = [{
 }, {
   _id: userTwoId,
   email: 'stannis@example.com',
-  password: 'userTwoPass'
+  password: 'userTwoPass',
+  tokens: [{
+    access: 'auth',
+    token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123Secret').toString()
+  }]
 }];
 
 //Populate users works in exactly the same way as populate todos

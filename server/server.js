@@ -31,14 +31,15 @@ app.use(bodyParser.json());
 
 //------------------------------------------------------------------------------------
 //When we POST to todos
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
 
   //Note: no need for "manual" validation, since that's done in the model already
   //by enforcing the required, types, etc. So we can straight up let the post
 
   //Create todo instance
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id,
   });
 
   //After it is created, let's save it
@@ -55,9 +56,11 @@ app.post('/todos', (req, res) => {
 });
 //------------------------------------------------------------------------------------
 //Get the todos
-app.get('/todos', (req, res) => {
+app.get('/todos', authenticate, (req, res) => {
   //MongooseInstance.find() is a promise, then with the results (we return)
-  Todo.find().then((todos) => {
+  Todo.find({
+    _creator:req.user._id
+  }).then((todos) => {
     res.send({todos});
   }, (e) => {
     res.status(400).send(e);
@@ -75,7 +78,7 @@ app.get('/todos', (req, res) => {
     200 is OK and it gets AUTOMATICALLY sent
 */
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
   //Get the id
   const theID = req.params.id;
 
@@ -85,7 +88,12 @@ app.get('/todos/:id', (req, res) => {
   }
 
   //Now fetch it
-  Todo.findById(theID).then((todo) => {
+  //But we have to match two ids -> theID which is the todo ID, and the user id
+  //Recall: findOne
+  Todo.findOne({
+    _id: theID,
+    _creator: req.user._id
+  }).then((todo) => {
     if(!todo){
       return res.status(404).send();
     }
@@ -103,7 +111,7 @@ app.get('/todos/:id', (req, res) => {
 //------------------------------------------------------------------------------------
 //Delete the todo task
 //Note: we're using DELETE Protocol (like GET and POST, but for deleting)
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
 
   //Get the given id
   var theID = req.params.id;
@@ -116,7 +124,11 @@ app.delete('/todos/:id', (req, res) => {
 
   //If here, then formatting is OK.
   //findByIdAndRemove, if NULL then it was NOT Removed
-  Todo.findByIdAndRemove(theID).then((todo) => {
+  //findOneAndRemove since two arguments to search for
+  Todo.findOneAndRemove({
+      _id: theID,
+      _creator: req.user._id
+    }).then((todo) => {
     if(!todo){
       return res.status(404).send();
     }
@@ -134,7 +146,7 @@ app.delete('/todos/:id', (req, res) => {
 //------------------------------------------------------------------------------------
 //Updating a specific todo (from its id)
 //We're using patch to do it (registering an url to our app through express)
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate,  (req, res) => {
   //Get the id from the request
   var id = req.params.id;
 
@@ -160,7 +172,7 @@ app.patch('/todos/:id', (req, res) => {
 
   //We are going to use the function findByIdAndUpdate(id, creationOptions)
   //Like findOneAndUpdate for mongo, but we pass through express to do it
-  Todo.findByIdAndUpdate(id, {$set:body}, {new: true}).then((todo) => {
+  Todo.findOneAndUpdate({id, _id: req.user._id}, {$set:body}, {new: true}).then((todo) => {
     //If any exceptions occur, catch them here, send error msg
     //Recall: $set: body will set THE WHOLE thing to the var body
     //$set : {someProp: 'someVal'} will set the property of that object
