@@ -261,7 +261,7 @@ describe('DELETE /todos/:id', () => {
 
       request(app) //Sending a PATCH request
       .patch(`/todos/${hexId}`)
-      .set('x-auth', users[0].tokens[0].token)
+      .set('x-auth', users[1].tokens[0].token)
       .send({
         completed: false,
         text
@@ -276,7 +276,22 @@ describe('DELETE /todos/:id', () => {
       .end(done);
     });
 
+    //This is another user's todo
+    //Second user, first todo -> should expect 404
+    it('should not update the todo created by other user', (done) => {
+      var hexId = todos[0]._id.toHexString();
+      var text = 'This should be the new text';
 
+      request(app)
+        .patch(`/todos/${hexId}`)
+        .set('x-auth', users[1].tokens[0].token)
+        .send({
+          completed: true,
+          text
+        })
+        .expect(404)
+        .end(done);
+    });
   });
 
 //------------------------------------------------------------- Testing for the users

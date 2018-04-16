@@ -172,7 +172,7 @@ app.patch('/todos/:id', authenticate,  (req, res) => {
 
   //We are going to use the function findByIdAndUpdate(id, creationOptions)
   //Like findOneAndUpdate for mongo, but we pass through express to do it
-  Todo.findOneAndUpdate({id, _id: req.user._id}, {$set:body}, {new: true}).then((todo) => {
+  Todo.findOneAndUpdate({_id: id, _creator: req.user._id}, {$set:body}, {new: true}).then((todo) => {
     //If any exceptions occur, catch them here, send error msg
     //Recall: $set: body will set THE WHOLE thing to the var body
     //$set : {someProp: 'someVal'} will set the property of that object
