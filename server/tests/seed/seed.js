@@ -42,14 +42,13 @@ const populateTodos = (done) => {
 //the users array
 //Each object has: _id that we generated, email since required, and pass
 //ONly first object has an auth token: json web token sign with id and auth
-//with salt abc123Secret
 const users = [{
   _id: userOneId,
   email: 'stan@example.com',
   password: 'userOnePass',
   tokens: [{
     access: 'auth',
-    token: jwt.sign({_id: userOneId, access: 'auth'}, 'abc123Secret').toString()
+    token: jwt.sign({_id: userOneId, access: 'auth'}, process.env.JWT_SECRET).toString()
   }]
 }, {
   _id: userTwoId,
@@ -57,7 +56,7 @@ const users = [{
   password: 'userTwoPass',
   tokens: [{
     access: 'auth',
-    token: jwt.sign({_id: userTwoId, access: 'auth'}, 'abc123Secret').toString()
+    token: jwt.sign({_id: userTwoId, access: 'auth'}, process.env.JWT_SECRET).toString()
   }]
 }];
 

@@ -64,7 +64,7 @@ UserSchema.methods.generateAuthToken = function(){
   //Sign it (Create the token) recall: first arg: object, 2nd arg: secret.
   //toString so we can cast it
   //Recall that every model has this._id.toHexString() that gives us hex string (url possible)
-  var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123Secret').toString();
+  var token = jwt.sign({_id: user._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
   //We defined that we wanted this structure.
   //NOte: concat produces strange behaviour (_id in the token ???)
@@ -129,7 +129,7 @@ UserSchema.statics.findByToken = function(token){
   {
     //Recall that .verify(token, secret) will not only verify but also
     //return the object decoded if successful (if not, will throw error)
-    decoded = jwt.verify(token, 'abc123Secret');
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
   }
   catch(e)
   { //Note: through Mongoose, we have access to Promise
